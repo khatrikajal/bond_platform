@@ -27,14 +27,10 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
 APPS_DIR = BASE_DIR / "apps"
 
-local_env_file = os.path.join(BASE_DIR, ".env", ".env.local")
+local_env_file = os.path.join(BASE_DIR, "envs", ".env.local")
 
 if os.path.isfile(local_env_file):
     load_dotenv(local_env_file)
-
-
-
-
 
 
 
@@ -69,7 +65,7 @@ LOCAL_APPS = []
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-AUTH_USER_MODEL = 'authentication.User'
+# AUTH_USER_MODEL = 'authentication.User'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -281,14 +277,14 @@ REST_FRAMEWORK = {
         # "rest_framework.renderers.BrowsableAPIRenderer",  # Enable only in development
     ],
     # Pagination
-    "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardResultsSetPagination",
-    "PAGE_SIZE": 20,
-    # Filtering & Ordering
-    "DEFAULT_FILTER_BACKENDS": [
-        "django_filters.rest_framework.DjangoFilterBackend",
-        "rest_framework.filters.SearchFilter",
-        "rest_framework.filters.OrderingFilter",
-    ],
+    # "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardResultsSetPagination",
+    # "PAGE_SIZE": 20,
+    # # Filtering & Ordering
+    # "DEFAULT_FILTER_BACKENDS": [
+    #     "django_filters.rest_framework.DjangoFilterBackend",
+    #     "rest_framework.filters.SearchFilter",
+    #     "rest_framework.filters.OrderingFilter",
+    # ],
     # Throttling
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.ScopedRateThrottle",
