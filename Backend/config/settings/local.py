@@ -11,7 +11,8 @@ if path.isfile(local_env_file):
 
 # SECRET_KEY = "django-insecure-z(alis=n7f+*r8==1e1qee2z!l80j#wd#onby7pj--)u76g6xl"
 
-SECRETKEY = getenv("SECRET_KEY")
+SECRET_KEY = getenv("SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = getenv("DEBUG") 

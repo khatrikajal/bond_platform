@@ -15,7 +15,10 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
+import environ
 
+env = environ.Env()
+environ.Env.read_env()
 
 # from celery.schedules import crontab
 
@@ -24,10 +27,11 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
 APPS_DIR = BASE_DIR / "apps"
 
-local_env_file = os.Path.join(BASE_DIR, ".env", ".env.local")
+local_env_file = os.path.join(BASE_DIR, ".env", ".env.local")
 
-if os.Path.isfile(local_env_file):
+if os.path.isfile(local_env_file):
     load_dotenv(local_env_file)
+
 
 
 
@@ -183,56 +187,58 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'formatter': 'verbose',
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'apps': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+#             'style': '{',
+#         },
+#         'simple': {
+#             'format': '{levelname} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'INFO',
+#             'class': 'logging.FileHandler',
+#             'filename': BASE_DIR / 'logs' / 'django.log',
+#             'formatter': 'verbose',
+#         },
+#         'console': {
+#             'level': 'INFO',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#         },
+#     },
+#     'root': {
+#         'handlers': ['console', 'file'],
+#         'level': 'INFO',
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console', 'file'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#         'apps': {
+#             'handlers': ['console', 'file'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#     },
+# }
 
 
 # Celery
 # ------------------------------------------------------------------------------
 if USE_TZ:
     CELERY_TIMEZONE = TIME_ZONE
-CELERY_BROKER_URL = "redis://localhost:6379/0" if DEBUG else env("CELERY_BROKER_URL")
+
+# Don’t use DEBUG here – only rely on env
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_RESULT_EXTENDED = True
 CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
@@ -308,29 +314,10 @@ REST_FRAMEWORK = {
 # -------------------------
 # Simple JWT for cookie-based auth
 # -------------------------
+# JWT Settings
+
 SIMPLE_JWT = {
-    # Token lifetimes
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # short-lived access token
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),   # long-lived refresh token
-
-    # Token rotation & blacklisting
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "UPDATE_LAST_LOGIN": True,
-
-    # Algorithm and keys
-    "ALGORITHM": "RS256",
-    "VERIFYING_KEY": Path(env("JWT_PUBLIC_KEY")).read_text(encoding="utf-8").strip(),
-
-    # Cookie settings
-    "AUTH_COOKIE": "access",
-    "AUTH_COOKIE_REFRESH": "refresh",
-    # "AUTH_COOKIE_DOMAIN": env("AUTH_COOKIE_DOMAIN", ".yourdomain.com"),
-    "AUTH_COOKIE_SECURE": True,           # requires HTTPS
-    "AUTH_COOKIE_HTTP_ONLY": True,        # prevents JS access
-    "AUTH_COOKIE_SAMESITE": "None",       # cross-site cookies for frontend
-
-    # Token classes
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "TOKEN_BLACKLIST_ENABLED": True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
 }
