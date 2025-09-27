@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+from celery.schedules import crontab
 
 import environ
 
@@ -137,6 +138,54 @@ DATABASES = {
 #         'PORT': config('DB_PORT', default='5432'),
 #     }
 # }
+# Database Configuration with PostgreSQL
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "bond_platform"),
+        "USER": os.getenv("POSTGRES_USER", "bond_user"), 
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "bond_password"),
+        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+        "PORT": os.getenv("POSTGRES_PORT", "5432"),
+        # "OPTIONS": {
+        #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        # },
+        "CONN_MAX_AGE": 60,  # Connection pooling
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",  # ← changed
+        "LOCATION": os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "bond_platform",
+        "TIMEOUT": 300,
+    },
+    "otp": {
+        "BACKEND": "django_redis.cache.RedisCache",  # ← changed
+        "LOCATION": os.getenv("REDIS_URL", "redis://127.0.0.1:6379/2"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "otp",
+        "TIMEOUT": 600,
+    }
+}
+
+
+
+
+# Fallback to SQLite for development if PostgreSQL is not available
+if os.getenv("USE_SQLITE", "False").lower() == "true":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
@@ -257,7 +306,24 @@ CELERY_TASK_SEND_SENT_EVENT = True
 
 
 
+CELERY_BEAT_SCHEDULE = {
+    # OTP cleanup tasks
+    "cleanup-expired-otp-requests": {
+        "task": "apps.authentication.tasks.cleanup_expired_otp_requests",
+        "schedule": crontab(minute="*/15"),  # Run every 15 minutes
+    },
+    "cleanup-old-otp-records": {
+        "task": "apps.authentication.tasks.cleanup_old_otp_records",
+        "schedule": crontab(hour=2, minute=30),  # Run daily at 2:30 AM
+        "kwargs": {"days_old": 30},
+    },
+    "generate-otp-analytics-report": {
+        "task": "apps.authentication.tasks.generate_otp_analytics_report",
+        "schedule": crontab(hour=8, minute=0),  # Run daily at 8:00 AM
+        "kwargs": {"days": 7},
+    },
 
+}
 # -------------------------
 # Django REST Framework
 # -------------------------
