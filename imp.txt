@@ -10,3 +10,120 @@ pip install django-silk django-filter
 pip install pillow reportlab openpyxl
 
 pip install python-dotenv==1.0.1 djangorestframework==3.15.2 django-countries==7.6.1 django-phonenumber-field==8.0.0 phonenumbers==8.13.42 drf-spectacular==0.27.2 Pillow==10.4.0 argon2-cffi==23.1.0 djoser==2.2.3 django-filter==24.3 django-celery-email==3.0.0 django-celery-beat==2.6.0 cloudinary==1.39.1 python-dateutil==2.9.0 psycopg2-binary==2.9.9
+
+
+
+pip install django-phonenumber-field[phonenumbers]
+
+The module you’re missing, phonenumber_field (from the package django-phonenumber-field), is a Django field type for storing and validating phone numbers.
+
+Here’s what it does:
+
+🔹 Why use django-phonenumber-field?
+
+Phone number validation
+
+It uses Google’s phonenumbers
+ library under the hood (the same one used in Android).
+
+Ensures numbers are valid, correctly formatted, and country-aware (e.g., +1 202-555-0189 instead of 2025550189).
+
+Custom model field
+
+Instead of using CharField or TextField, you can use:
+
+from phonenumber_field.modelfields import PhoneNumberField
+
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    phone = PhoneNumberField(unique=True)
+
+
+
+
+What is Djoser?
+
+Djoser
+ is a Django app that provides a ready-made REST API for user authentication.
+Instead of writing your own login, registration, password reset, and token endpoints, Djoser gives you endpoints out of the box.
+
+For example:
+
+/auth/users/ → register new users
+
+/auth/token/login/ → obtain auth token
+
+/auth/token/logout/ → logout
+
+/auth/users/me/ → get/update current user
+
+It works seamlessly with Django REST Framework and supports both:
+
+Token-based authentication
+
+JWT (with djangorestframework-simplejwt)
+
+🔹 Fix (install it)
+
+Install inside your virtual environment:
+
+pip install djoser
+
+
+If you’re using JWT with it:
+
+pip install djoser djangorestframework-simplejwt
+
+🔹 Typical setup
+
+Add to INSTALLED_APPS in settings.py:
+
+INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    'rest_framework.authtoken',  # if using token auth
+    'djoser',
+]
+
+
+Configure DRF in settings.py (example with JWT):
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
+Add URLs in your urls.py:
+
+from django.urls import path, include
+
+urlpatterns = [
+    ...
+    path("auth/", include("djoser.urls")),
+    path("auth/", include("djoser.urls.jwt")),  # if using JWT
+]
+
+
+
+
+What is django-celery-beat?
+
+django-celery-beat is a Django app for managing periodic (scheduled) Celery tasks through the Django admin.
+
+It allows you to:
+
+Schedule tasks to run at specific intervals (every minute, hour, day, etc.)
+
+Use crontab schedules directly in Django admin
+
+Store schedules in your database instead of hardcoding them in Python
+
+Typical use cases:
+
+Sending reminder emails every day
+
+Cleaning up old data nightly
+
+Running background jobs periodically

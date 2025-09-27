@@ -55,7 +55,7 @@ THIRD_PARTY_APPS = [
     "djoser",
     "cloudinary",
     "django_filters",
-    "djcelery_email",
+    # "djcelery_email",
     "django_celery_beat",
     "rest_framework_simplejwt",
     "corsheaders",
