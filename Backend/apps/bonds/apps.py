@@ -1,6 +1,10 @@
+# G:\bond_platform\Backend\config\apps.py
 from django.apps import AppConfig
 
 
-class BondsConfig(AppConfig):
+class FrontendConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.bonds'
+    name = 'frontend'
+
+    def ready(self):
+        import bonds.signals
