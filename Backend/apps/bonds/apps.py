@@ -2,9 +2,9 @@
 from django.apps import AppConfig
 
 
-class FrontendConfig(AppConfig):
+class BondsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'frontend'
+    name = 'apps.bonds'
 
     def ready(self):
-        import bonds.signals
+        import apps.bonds.signals

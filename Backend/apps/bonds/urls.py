@@ -1,4 +1,4 @@
-# C:\Users\Combat Solutions\Desktop\bond_platform\frontend\urls.py
+# G:\bond_platform\Backend\apps\bonds\urls.py
 from django.urls import path
 from .views import *
 

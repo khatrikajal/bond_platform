@@ -1,10 +1,15 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.urls import include, path
 from django.views import defaults as default_views
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.contrib import admin
+from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 
 # Default error handlers
 handler400 = default_views.bad_request
@@ -13,7 +18,9 @@ handler500 = default_views.server_error
 
 # Base urlpatterns
 urlpatterns = [
-    path(settings.ADMIN_URL, admin.site.urls),  # Keep this for admin
+    # path(settings.ADMIN_URL, admin.site.urls),  
+    path("admin/", admin.site.urls),
+    # # Keep this for admin
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
 

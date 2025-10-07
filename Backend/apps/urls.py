@@ -1,4 +1,4 @@
-# Backend/urls.py
+# G:\bond_platform\Backend\apps\urls.py
 from django.contrib import admin
 from django.urls import path, include
 
@@ -12,7 +12,7 @@ urlpatterns = [
     # path('audit/', include('apps.audit.urls')),
 
     # # Bonds app
-    # path('api/bonds/', include('apps.bonds.urls')),
+    path('bonds/', include('apps.bonds.urls')),
 
     # # Compliance app
     # path('api/compliance/', include('apps.compliance.urls')),

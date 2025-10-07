@@ -25,3 +25,4 @@ def send_thank_you_email(sender, instance, created, **kwargs):
         )
         email.content_subtype = "html"  # Important for HTML
         email.send(fail_silently=True)
+        

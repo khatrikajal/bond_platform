@@ -409,10 +409,36 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React dev server
     "http://127.0.0.1:3000",
     "http://localhost:8000",
-    # Add your frontend URLs here
+    # Add your bonds URLs here
 ]
 
 
 #   file upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Bond Platform API",
+    "DESCRIPTION": "Bond Platform API Documentation (secured with JWT)",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "defaultModelExpandDepth": 2,
+        "defaultModelsExpandDepth": 1,
+        "docExpansion": "none",
+        "persistAuthorization": True,
+        "displayRequestDuration": True,
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SECURITY": [{"bearerAuth": []}],
+    "COMPONENTS": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+}

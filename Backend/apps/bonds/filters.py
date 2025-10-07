@@ -1,4 +1,4 @@
-# C:\Users\Admin\Desktop\bond_platform\frontend\filters.py
+# C:\Users\Admin\Desktop\bond_platform\bonds\filters.py
 import django_filters
 from .models import ISINBasicInfo,CreditRating,IssuerType,TaxCategory,OptionType
 from django.db.models import Q

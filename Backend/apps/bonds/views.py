@@ -10,7 +10,7 @@ from django.db.models.functions import  Now, Extract
 from datetime import date
 from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
-from silk.profiling.profiler import silk_profile
+# from silk.profiling.profiler import silk_profile
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import BondFilter
 from .pagination import BondCursorPagination
@@ -19,12 +19,13 @@ from rest_framework import status
 from .services.bond_elastic_service import BondElasticService
 from decimal import Decimal
 from .utils import RATING_DESCRIPTIONS
-
+from rest_framework.permissions import AllowAny
 
 
 # Create your views here.
 
 class StatsView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         data = {
             "totalIssuers": ISINBasicInfo.objects.values('issuer_name').distinct().count(),
@@ -97,6 +98,7 @@ class BondSearchORMListView(generics.ListAPIView):
     """
     Search bonds by ISIN or issuer name using pure ORM.
     """
+    permission_classes = [AllowAny]
     serializer_class = ISINBasicInfoSerializer
     pagination_class = BondCursorPagination
 
@@ -146,6 +148,7 @@ class HomePageFeaturedBonds(APIView):
         Supports a 'limit' query param to specify number of bonds (default 5, max 100).
         Caches results for 5 minutes.
     """
+    permission_classes = [AllowAny]
     def get(self, request):
         limit_param = request.GET.get("limit", 5)
         try:
@@ -185,6 +188,7 @@ class BondsListView(generics.ListAPIView):
     API endpoint that returns a list of bonds.
     Annotates each bond with the number of days remaining until maturity.
     """
+    permission_classes = [AllowAny]
     serializer_class = ISINBasicInfoSerializer
     filter_backends = [DjangoFilterBackend,filters.OrderingFilter]  
     filterset_class = BondFilter 
@@ -232,6 +236,7 @@ class BondsListView(generics.ListAPIView):
 class BondDetailView(APIView):
     """
     Retrieve detailed information about a specific bond by ISIN code."""
+    permission_classes = [AllowAny]
     def get(self, request):
         isin_code = request.GET.get("isin")
         bond = get_object_or_404(
@@ -276,7 +281,7 @@ class SimilarBondsView(APIView):
     - YTM (±0.5% tolerance by default)
     Supports optional 'limit' query parameter.
     """
-
+    permission_classes = [AllowAny]
     def get(self, request):
         isin_code = request.query_params.get("isin")
         limit = request.query_params.get("limit", 50)  # default limit
@@ -335,6 +340,7 @@ class BondResearchDataView(APIView):
     """  
     Retrieve research data (financial metrics, ratio analysis, key factors) for the company associated with a given bond ISIN.
     """
+    permission_classes = [AllowAny]
     def get(self, request):
         isin_code = request.GET.get("isin")
         bond = get_object_or_404(ISINBasicInfo, isin_code=isin_code)
@@ -386,7 +392,7 @@ class BondSnapshotView(APIView):
     Returns a UI-ready Key Financial & Rating Snapshot for a given bond ISIN.
     Only includes financial metrics and credit ratings.
     """
-
+    permission_classes = [AllowAny]
     def get(self, request):
         isin_code = request.GET.get("isin")
         if not isin_code:
@@ -440,6 +446,7 @@ class BondSnapshotView(APIView):
         return Response({"company": company.issuer_name, "snapshot": serializer.data}, status=status.HTTP_200_OK)
 
 class ContactMessageView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = ContactMessageSerializer(data=request.data)
         if serializer.is_valid():
