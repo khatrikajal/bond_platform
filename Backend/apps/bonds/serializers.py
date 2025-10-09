@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import date
 
 class ISINBasicInfoSerializer(serializers.ModelSerializer):
+    price = serializers.DecimalField(source='face_value_rs', max_digits=18, decimal_places=2, read_only=True)
     tenure = serializers.SerializerMethodField()
     ratings = serializers.SerializerMethodField()
 

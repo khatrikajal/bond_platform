@@ -21,7 +21,8 @@ from decimal import Decimal
 from .utils import RATING_DESCRIPTIONS
 from rest_framework.permissions import AllowAny
 from apps.utils.swagger_base import SwaggerParamAPIView
-from drf_spectacular.utils import OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema 
+
 
 
 # Create your views here.
@@ -421,12 +422,36 @@ class BondSnapshotView(SwaggerParamAPIView):
         serializer = SnapshotItemSerializer(snapshot, many=True)
         return Response({"company": company.issuer_name, "snapshot": serializer.data}, status=status.HTTP_200_OK)
 
+# class ContactMessageView(SwaggerParamAPIView):
+#     permission_classes = [AllowAny]
+#     swagger_parameters = [
+#         OpenApiParameter("name", OpenApiTypes.STR, OpenApiParameter.QUERY, description="Name of the user"),
+#         OpenApiParameter("email", OpenApiTypes.STR, OpenApiParameter.QUERY, description="Email of the user"),
+#         OpenApiParameter("phone_number", OpenApiTypes.STR, OpenApiParameter.QUERY, description="Contact phone number"),
+#         OpenApiParameter("message", OpenApiTypes.STR, OpenApiParameter.QUERY, description="User's message or query")
+#     ]
+
+#     def post(self, request):
+#         serializer = ContactMessageSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"message": "Your message has been added successfully!"}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class ContactMessageView(SwaggerParamAPIView):
     permission_classes = [AllowAny]
+
+    @extend_schema(
+        request=ContactMessageSerializer,
+        responses={201: dict, 400: dict},
+        description="Submit a contact message with name, email, phone number, and message."
+    )
     def post(self, request):
         serializer = ContactMessageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            # Response immediately, email handled via signal
-            return Response({"message": "Your message has been added successfully!"}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "Your message has been added successfully!"},
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
