@@ -20,11 +20,13 @@ from .services.bond_elastic_service import BondElasticService
 from decimal import Decimal
 from .utils import RATING_DESCRIPTIONS
 from rest_framework.permissions import AllowAny
+from apps.utils.swagger_base import SwaggerParamAPIView
+from drf_spectacular.utils import OpenApiParameter, OpenApiTypes
 
 
 # Create your views here.
 
-class StatsView(APIView):
+class StatsView(SwaggerParamAPIView):
     permission_classes = [AllowAny]
     def get(self, request):
         data = {
@@ -35,70 +37,19 @@ class StatsView(APIView):
             "stableReturnPercent": 50
         }
         return Response(data)
-    
-
-# class BondSearchESListView(generics.ListAPIView):
-#     serializer_class = ISINBasicInfoSerializer
-#     pagination_class = BondCursorPagination
-
-#     def get_queryset(self):
-#         # 1 Get query params
-#         isin = self.request.query_params.get('isin')
-#         issuer_name = self.request.query_params.get('issuerName')
-
-#         # 2 Search ES
-#         es_results = BondElasticService.search_bonds(
-#             issuer_name=issuer_name,
-#             size=100  # adjust as needed
-#         )
-
-#         # 3 Extract ISIN codes from ES
-#         isin_codes = [hit["_id"] for hit in es_results["hits"]["hits"]]
-
-#         # Optional filter by ISIN from query params
-#         if isin:
-#             isin_codes = [code for code in isin_codes if isin.lower() in code.lower()]
-
-#         # 4 Query DB for detailed info, with same annotations & prefetch
-#         ratings_prefetch = Prefetch(
-#             "ratings",
-#             queryset=ISINRating.objects.order_by("rating_agency", "-rating_date"),
-#             to_attr="latest_ratings"
-#         )
-
-#         queryset = (
-#             ISINBasicInfo.objects.filter(isin_code__in=isin_codes)
-#             .annotate(
-#                 tenure_days=ExpressionWrapper(
-#                     Extract('maturity_date', 'epoch') - Extract(Now(), 'epoch'),
-#                     output_field=FloatField()
-#                 ) / (24 * 60 * 60),
-#                 latest_rating=Subquery(
-#                     ISINRating.objects.filter(isin=OuterRef('pk'))
-#                     .order_by('-rating_date')
-#                     .values('credit_rating')[:1]
-#                 ),
-#                 latest_agency=Subquery(
-#                     ISINRating.objects.filter(isin=OuterRef('pk'))
-#                     .order_by('-rating_date')
-#                     .values('rating_agency')[:1]
-#                 ),
-#             )
-#             .prefetch_related(ratings_prefetch)
-#             .filter(isin_active=True)
-#         )
-
-#         # 5 Optional: preserve ES order
-#         queryset = sorted(queryset, key=lambda x: isin_codes.index(x.isin_code))
-
-#         return queryset
 
 
-class BondSearchORMListView(generics.ListAPIView):
+
+class BondSearchORMListView(SwaggerParamAPIView,generics.ListAPIView):
     """
     Search bonds by ISIN or issuer name using pure ORM.
     """
     permission_classes = [AllowAny]
+    swagger_parameters = [
+    OpenApiParameter("isin", OpenApiTypes.STR, OpenApiParameter.QUERY, description="Filter bonds by ISIN code"),
+    OpenApiParameter("issuerName", OpenApiTypes.STR, OpenApiParameter.QUERY, description="Filter bonds by issuer name")
+     ]
+
     serializer_class = ISINBasicInfoSerializer
     pagination_class = BondCursorPagination
 
@@ -141,7 +92,7 @@ class BondSearchORMListView(generics.ListAPIView):
 
     
 
-class HomePageFeaturedBonds(APIView):
+class HomePageFeaturedBonds(SwaggerParamAPIView):
     """
         Returns a list of featured bonds for the homepage.
         Bonds are sorted by issue_date descending.
@@ -149,6 +100,10 @@ class HomePageFeaturedBonds(APIView):
         Caches results for 5 minutes.
     """
     permission_classes = [AllowAny]
+    swagger_parameters = [
+    OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY, description="Number of featured bonds to return (default: 5, max: 100)")
+   ]
+
     def get(self, request):
         limit_param = request.GET.get("limit", 5)
         try:
@@ -189,6 +144,10 @@ class BondsListView(generics.ListAPIView):
     Annotates each bond with the number of days remaining until maturity.
     """
     permission_classes = [AllowAny]
+    swagger_parameters = [
+        OpenApiParameter("ordering", OpenApiTypes.STR, OpenApiParameter.QUERY, description="Sort by 'tenure_days' or 'ytm_percent'"),
+    ]
+
     serializer_class = ISINBasicInfoSerializer
     filter_backends = [DjangoFilterBackend,filters.OrderingFilter]  
     filterset_class = BondFilter 
@@ -233,10 +192,14 @@ class BondsListView(generics.ListAPIView):
     
     
     
-class BondDetailView(APIView):
+class BondDetailView(SwaggerParamAPIView):
     """
     Retrieve detailed information about a specific bond by ISIN code."""
     permission_classes = [AllowAny]
+    swagger_parameters = [
+    OpenApiParameter("isin", OpenApiTypes.STR, OpenApiParameter.QUERY, description="ISIN code of the bond to fetch details")
+    ]
+
     def get(self, request):
         isin_code = request.GET.get("isin")
         bond = get_object_or_404(
@@ -274,7 +237,7 @@ class BondDetailView(APIView):
 
 
 
-class SimilarBondsView(APIView):
+class SimilarBondsView(SwaggerParamAPIView):
     """
     Returns bonds similar to a given ISIN based on:
     - Latest credit rating
@@ -282,6 +245,11 @@ class SimilarBondsView(APIView):
     Supports optional 'limit' query parameter.
     """
     permission_classes = [AllowAny]
+    swagger_parameters = [
+    OpenApiParameter("isin", OpenApiTypes.STR, OpenApiParameter.QUERY, description="ISIN code to find similar bonds"),
+    OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY, description="Maximum number of results (default: 50)")
+    ]
+
     def get(self, request):
         isin_code = request.query_params.get("isin")
         limit = request.query_params.get("limit", 50)  # default limit
@@ -336,11 +304,15 @@ class SimilarBondsView(APIView):
         return Response(serializer.data)
 
 
-class BondResearchDataView(APIView):
+class BondResearchDataView(SwaggerParamAPIView):
     """  
     Retrieve research data (financial metrics, ratio analysis, key factors) for the company associated with a given bond ISIN.
     """
     permission_classes = [AllowAny]
+    swagger_parameters = [
+    OpenApiParameter("isin", OpenApiTypes.STR, OpenApiParameter.QUERY, description="ISIN code of the bond to fetch research data")
+]
+
     def get(self, request):
         isin_code = request.GET.get("isin")
         bond = get_object_or_404(ISINBasicInfo, isin_code=isin_code)
@@ -387,12 +359,16 @@ class BondResearchDataView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class BondSnapshotView(APIView):
+class BondSnapshotView(SwaggerParamAPIView):
     """
     Returns a UI-ready Key Financial & Rating Snapshot for a given bond ISIN.
     Only includes financial metrics and credit ratings.
     """
     permission_classes = [AllowAny]
+    swagger_parameters = [
+    OpenApiParameter("isin", OpenApiTypes.STR, OpenApiParameter.QUERY, description="ISIN code of the bond for snapshot")
+]
+
     def get(self, request):
         isin_code = request.GET.get("isin")
         if not isin_code:
@@ -445,7 +421,7 @@ class BondSnapshotView(APIView):
         serializer = SnapshotItemSerializer(snapshot, many=True)
         return Response({"company": company.issuer_name, "snapshot": serializer.data}, status=status.HTTP_200_OK)
 
-class ContactMessageView(APIView):
+class ContactMessageView(SwaggerParamAPIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = ContactMessageSerializer(data=request.data)

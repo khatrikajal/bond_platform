@@ -23,13 +23,26 @@ SITE_NAME = getenv("SITE_NAME", "Bond Platform")
 
 DEBUG = getenv("DEBUG", "False").lower() == "true"
 # ALLOWED_HOSTS = ["bondplatform.com", "localhost", "127.0.0.1"]
-ALLOWED_HOSTS = ["bondplatform.com", "localhost", "127.0.0.1", "127.0.0.1:8000"]
-# CSRF_TRUSTED_ORIGINS = ["https://bondplatform.com"]
+# ALLOWED_HOSTS = ["bondplatform.com", "localhost", "127.0.0.1", "127.0.0.1:8000","93.127.206.37:8000"]
+# ALLOWED_HOSTS = ["bondplatform.com", "localhost", "127.0.0.1", "127.0.0.1:8000","93.127.206.37"]
+ALLOWED_HOSTS = [ "localhost", "127.0.0.1", "93.127.206.37"]
+
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "https://bondplatform.com",
+    "http://127.0.0.1:8000",
+    "http://93.127.206.37:8000",
+    "https://93.127.206.37:8000",
 ]
+
+
+# CSRF_TRUSTED_ORIGINS = ["https://bondplatform.com"]
+# CSRF_TRUSTED_ORIGINS = [
+#     "http://127.0.0.1:8000",
+#     "http://localhost:8000",
+#     "https://bondplatform.com",
+#     "http://93.127.206.37:8000"
+# ]
+
 
 
 # ALLOWED_HOSTS = ['*']

@@ -1,3 +1,4 @@
+# /root/bond_platform/Backend/config/middleware.py
 import logging
 import time
 from datetime import datetime
@@ -20,9 +21,15 @@ class IgnoreBadHostMiddleware:
         host = request.META.get("HTTP_HOST", "")
 
         # If host is not in ALLOWED_HOSTS, return a 400 response immediately
-        if host and self.allowed_hosts != ["*"] and host not in self.allowed_hosts:
-            logger.warning(f"Bad Host: {host} - Path: {request.path}")  # noqa: G004
-            return HttpResponse(status=400)
+        # if host and self.allowed_hosts != ["*"] and host not in self.allowed_hosts:
+        #     logger.warning(f"Bad Host: {host} - Path: {request.path}")  # noqa: G004
+        #     return HttpResponse(status=400)
+        if host:
+            host_name = host.split(":")[0]  # remove port (e.g., 93.127.206.37:8000 -> 93.127.206.37)
+            if host_name not in self.allowed_hosts:
+                logger.warning(f"Bad Host: {host} - Path: {request.path}")
+                return HttpResponse(status=400)
+        
 
         # Otherwise, proceed with the request
         try:
